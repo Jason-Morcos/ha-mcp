@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import json
 import logging
-from collections.abc import Awaitable
 from typing import Any
 from unittest.mock import AsyncMock
 
@@ -34,11 +33,11 @@ from pytest_homeassistant.common import (
     mock_platform,
 )
 
-from ha_mcp._vendor.fastmcp.exceptions import ToolError
 from ha_mcp.client.rest_client import HomeAssistantClient
 from ha_mcp.tools.tools_registry import RegistryTools
 
 from ._client_spies import sent_messages
+from ._tool_errors import _tool_error
 
 
 @pytest.fixture
@@ -55,14 +54,6 @@ def _device(hass: HomeAssistant, domain: str, **kwargs: Any) -> dr.DeviceEntry:
     return dr.async_get(hass).async_get_or_create(
         config_entry_id=entry.entry_id, **kwargs
     )
-
-
-async def _tool_error(call: Awaitable[Any]) -> dict[str, Any]:
-    """The error payload of a tool call that must fail."""
-    with pytest.raises(ToolError) as excinfo:
-        _ = await call
-    error: dict[str, Any] = json.loads(str(excinfo.value))
-    return error
 
 
 async def test_summary_list_is_compact_and_full_keeps_cores_row(
